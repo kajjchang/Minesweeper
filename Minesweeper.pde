@@ -18,6 +18,7 @@ void setup () {
             buttons[r][c] = new MSButton(r, c);
         }
     }
+    mines = new ArrayList();
 
     started = false;
 }
@@ -34,14 +35,13 @@ public void setMines(int start_r, int start_c) {
 }
 
 public void draw() {
-    background(0);
     if (isWon()) {
         displayWinningMessage();
     }
 }
 
 public boolean isWon() {
-    boolean won = true;
+    boolean won = started;
     for (MSButton mine : mines) {
         if (!mine.isFlagged()) {
             won = false;
@@ -52,10 +52,12 @@ public boolean isWon() {
 
 public void displayLosingMessage() {
     text("You Lost!", width / 2, height / 2);
+    noLoop();
 }
 
 public void displayWinningMessage() {
     text("You Won!", width / 2, height / 2);
+    noLoop();
 }
 
 public boolean isValid(int r, int c) {
@@ -76,33 +78,55 @@ public int countMines(int r, int c) {
 
 public class MSButton {
     private float x, y, width, height;
+    private int r, c;
     private boolean clicked, flagged;
     private String label;
     
     public MSButton(int r, int c) {
-        width = width / NUM_COLS;
-        height = height / NUM_ROWS;
+        width = 400 / NUM_COLS;
+        height = 400 / NUM_ROWS;
         x = c * width;
         y = r * height;
+        this.r = r;
+        this.c = c;
         label = "";
         flagged = clicked = false;
         Interactive.add(this);
     }
 
     public void mousePressed() {
-        clicked = true;
-        //your code here
+        if (!started) {
+            started = true;
+            setMines(r, c);
+        }
+
+        if (mines.contains(this)) {
+            setLabel("F");
+            draw();
+            displayLosingMessage();
+        } else {
+            int num_mines = countMines(r, c);
+            if (num_mines == 0) {
+                for (int i = -1; i <= 1; i++) {
+                    for (int j = -1; j <= 1; j++) {
+                        if (isValid(r + i, c + j)) {
+                            buttons[r][c].mousePressed();
+                        }
+                    }
+                }
+            } else {
+                setLabel(num_mines);
+            }
+        }
     }
-    public void draw () 
-    {    
+
+    public void draw() {
         if (flagged)
-            fill(0);
-        // else if( clicked && mines.contains(this) ) 
-        //     fill(255,0,0);
+            fill(150);
         else if(clicked)
-            fill( 200 );
+            fill(200);
         else 
-            fill( 100 );
+            fill(100);
 
         rect(x, y, width, height);
         fill(0);
