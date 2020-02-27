@@ -30,6 +30,7 @@ public void setMines(int start_r, int start_c) {
         MSButton button = buttons[r][c];
         if (!mines.contains(button) && r != start_r && c != start_c) {
             mines.add(button);
+            button.setLabel("F");
         }
     }
 }
@@ -68,7 +69,7 @@ public int countMines(int r, int c) {
     int num_mines = 0;
     for (int i = -1; i <= 1; i++) {
         for (int j = -1; j <= 1; j++) {
-            if (isValid(r + i, c + j) && mines.contains(buttons[r][c])) {
+            if ((i != 0 || j != 0) && isValid(r + i, c + j) && mines.contains(buttons[r + i][c + j])) {
                 num_mines++;
             }
         }
@@ -79,7 +80,7 @@ public int countMines(int r, int c) {
 public class MSButton {
     private float x, y, width, height;
     private int r, c;
-    private boolean clicked, flagged;
+    private boolean revealed, flagged;
     private String label;
     
     public MSButton(int r, int c) {
@@ -90,7 +91,7 @@ public class MSButton {
         this.r = r;
         this.c = c;
         label = "";
-        flagged = clicked = false;
+        flagged = revealed = false;
         Interactive.add(this);
     }
 
@@ -105,17 +106,18 @@ public class MSButton {
             draw();
             displayLosingMessage();
         } else {
+            revealed = true;
             int num_mines = countMines(r, c);
             if (num_mines == 0) {
                 for (int i = -1; i <= 1; i++) {
                     for (int j = -1; j <= 1; j++) {
-                        if (isValid(r + i, c + j)) {
-                            buttons[r][c].mousePressed();
+                        if ((i != 0 || j != 0) && isValid(r + i, c + j)) {
+                            buttons[r + i][c + j].mousePressed();
                         }
                     }
                 }
             } else {
-                setLabel(num_mines);
+                // setLabel(num_mines);
             }
         }
     }
@@ -123,7 +125,7 @@ public class MSButton {
     public void draw() {
         if (flagged)
             fill(150);
-        else if(clicked)
+        else if(revealed)
             fill(200);
         else 
             fill(100);
